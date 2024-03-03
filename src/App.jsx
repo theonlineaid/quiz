@@ -1,31 +1,36 @@
 import React, { useEffect, useReducer } from 'react';
-import Header from './Header/Head';
-import Main from './Header/Main';
+
+import Head from './components/Head';
+import Main from './components/Main';
+import Loader from './components/Loader';
+import Error from './components/Error';
+import QuizStart from './components/QuizStart';
 
 // Action types
 const FETCH_REQUEST = 'FETCH_REQUEST';
 const FETCH_SUCCESS = 'FETCH_SUCCESS';
 const FETCH_FAILURE = 'FETCH_FAILURE';
 
+// Initial state
+const initialState = {
+  // loading: false,
+  // error: null,
+  data: [],
+  status: 'loading',
+};
+
 // Reducer function
 const dataReducer = (state, action) => {
   switch (action.type) {
     case FETCH_REQUEST:
-      return { ...state, loading: true, error: null };
+      return { ...state, status: "loading", error: null };
     case FETCH_SUCCESS:
-      return { ...state, loading: false, data: action.payload };
+      return { ...state, status: "success", data: action.payload };
     case FETCH_FAILURE:
-      return { ...state, loading: false, error: action.payload };
+      return { ...state, status: "error", error: action.payload };
     default:
       return state;
   }
-};
-
-// Initial state
-const initialState = {
-  loading: false,
-  data: null,
-  error: null,
 };
 
 /**
@@ -33,7 +38,7 @@ const initialState = {
  * @returns {JSX.Element} The main component of the application.
  */
 function App() {
-  const [state, dispatch] = useReducer(dataReducer, initialState);
+  const [{ data, status }, dispatch] = useReducer(dataReducer, initialState);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -56,11 +61,17 @@ function App() {
 
   return (
     <>
-      <Header />
+      <Head />
       <Main>
-        {state.loading && <p>Loading...</p>}
-        {state.error && <p>Error: {state.error}</p>}
-        {state.data && <p>Data: {JSON.stringify(state.data)}</p>}
+        {/* {state.loading && <p>Loading...</p>} */}
+        {/* {state.error && <p>Error: {state.error}</p>}
+        {state.data && <p>Data: {JSON.stringify(state.data)}</p>} */}
+
+        {/* <QuizStart /> */}
+
+        {status === "loading" && <Loader />}
+        {status === "error" && <Error />}
+        {status === "success" && <QuizStart />}
       </Main>
     </>
   );
