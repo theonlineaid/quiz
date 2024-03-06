@@ -5,6 +5,7 @@ import Main from './components/Main';
 import Loader from './components/Loader';
 import Error from './components/Error';
 import QuizStart from './components/QuizStart';
+import Question from './components/Question';
 
 // Action types
 const FETCH_REQUEST = 'FETCH_REQUEST';
@@ -17,6 +18,8 @@ const initialState = {
   // error: null,
   data: [],
   status: 'loading',
+
+  index: 0
 };
 
 // Reducer function
@@ -28,6 +31,8 @@ const dataReducer = (state, action) => {
       return { ...state, status: "success", data: action.payload };
     case FETCH_FAILURE:
       return { ...state, status: "error", error: action.payload };
+    case "STARTING":
+      return { ...state, status: "active", error: null };
     default:
       return state;
   }
@@ -38,7 +43,9 @@ const dataReducer = (state, action) => {
  * @returns {JSX.Element} The main component of the application.
  */
 function App() {
-  const [{ data, status }, dispatch] = useReducer(dataReducer, initialState);
+  const [{ data, status, index }, dispatch] = useReducer(dataReducer, initialState);
+
+  const numOfQuestion = data.length;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -71,7 +78,9 @@ function App() {
 
         {status === "loading" && <Loader />}
         {status === "error" && <Error />}
-        {status === "success" && <QuizStart />}
+        {status === "success" && <QuizStart length={numOfQuestion} dispatch={dispatch} />}
+
+        {status === "active" && <Question question={data[index]} />}
       </Main>
     </>
   );

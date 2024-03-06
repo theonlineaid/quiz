@@ -1,13 +1,13 @@
 import React from 'react'
 
-export default function QuizStart() {
+export default function QuizStart({ dispatch, length }) {
     return (
         <div className="start">
             <h2>Welcome to The React Quiz!</h2>
-            <h3>{15} questions to test your React mastery</h3>
+            <h3>{length} questions to test your React mastery</h3>
             <button
                 className="btn btn-ui"
-            // onClick={() => dispatch({ type: "start" })}
+                onClick={() => dispatch({ type: "STARTING" })}
             >
                 Let's start
             </button>
