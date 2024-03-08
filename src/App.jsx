@@ -6,33 +6,43 @@ import Loader from './components/Loader';
 import Error from './components/Error';
 import QuizStart from './components/QuizStart';
 import Question from './components/Question';
+import NextButton from './components/NextButton';
+import Progress from './components/Progress';
 
-// Action types
-const FETCH_REQUEST = 'FETCH_REQUEST';
-const FETCH_SUCCESS = 'FETCH_SUCCESS';
-const FETCH_FAILURE = 'FETCH_FAILURE';
 
 // Initial state
 const initialState = {
-  // loading: false,
-  // error: null,
   data: [],
   status: 'loading',
-
-  index: 0
+  index: 0,
+  answer: null,
+  points: 0
 };
 
 // Reducer function
 const dataReducer = (state, action) => {
   switch (action.type) {
-    case FETCH_REQUEST:
+    case "Loading":
       return { ...state, status: "loading", error: null };
-    case FETCH_SUCCESS:
+    case "Success":
       return { ...state, status: "success", data: action.payload };
-    case FETCH_FAILURE:
+    case "Error":
       return { ...state, status: "error", error: action.payload };
-    case "STARTING":
-      return { ...state, status: "active", error: null };
+    case "Start":
+      return { ...state, status: "active" };
+    case "NewAnswer":
+      const question = state.data.at(state.index)
+
+      return {
+        ...state,
+        answer: action.payload,
+        points: action.payload === question.correctOption
+          ? state.points + question.points
+          : state.points
+      };
+
+    case "NextQuestion":
+      return { ...state, index: state.index + 1, answer: null };
     default:
       return state;
   }
@@ -43,44 +53,49 @@ const dataReducer = (state, action) => {
  * @returns {JSX.Element} The main component of the application.
  */
 function App() {
-  const [{ data, status, index }, dispatch] = useReducer(dataReducer, initialState);
+  const [{ data, status, index, answer, points }, dispatch] = useReducer(dataReducer, initialState);
 
   const numOfQuestion = data.length;
+  const maxPossiblePoints = data.reduce((prev, cur) => prev + cur.points, 0)
 
   useEffect(() => {
     const fetchData = async () => {
-      dispatch({ type: FETCH_REQUEST });
+      dispatch({ type: "Loading" });
 
       try {
         const response = await fetch('http://localhost:5000/questions');
         const result = await response.json();
 
-        dispatch({ type: FETCH_SUCCESS, payload: result });
+        dispatch({ type: "Success", payload: result });
 
       } catch (error) {
         console.error('Error fetching data:', error);
-        dispatch({ type: FETCH_FAILURE, payload: 'Error fetching data' });
+        dispatch({ type: "Error", payload: 'Error fetching data' });
       }
     };
 
     fetchData();
-  }, []); // Empty dependency array, as fetchData does not depend on any variable within the useEffect block
+  }, []);
+
 
   return (
     <>
       <Head />
       <Main>
-        {/* {state.loading && <p>Loading...</p>} */}
-        {/* {state.error && <p>Error: {state.error}</p>}
-        {state.data && <p>Data: {JSON.stringify(state.data)}</p>} */}
-
-        {/* <QuizStart /> */}
 
         {status === "loading" && <Loader />}
         {status === "error" && <Error />}
         {status === "success" && <QuizStart length={numOfQuestion} dispatch={dispatch} />}
 
-        {status === "active" && <Question question={data[index]} />}
+        {status === "active" && <>
+
+          <Progress index={index} length={numOfQuestion} points={points} maxPossiblePoints={maxPossiblePoints} answer={answer} />
+
+          <Question question={data[index]} dispatch={dispatch} answer={answer} />
+
+          <NextButton dispatch={dispatch} answer={answer} />
+
+        </>}
       </Main>
     </>
   );

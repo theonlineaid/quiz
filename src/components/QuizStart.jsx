@@ -7,7 +7,7 @@ export default function QuizStart({ dispatch, length }) {
             <h3>{length} questions to test your React mastery</h3>
             <button
                 className="btn btn-ui"
-                onClick={() => dispatch({ type: "STARTING" })}
+                onClick={() => dispatch({ type: "Start" })}
             >
                 Let's start
             </button>
